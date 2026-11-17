@@ -2,545 +2,1050 @@
 <html lang="id">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Pengingat Obat Dynamic-Interval</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>YourDose — Dynamic Medication Tracker</title>
   <style>
     :root {
-      --bg: #f4f7f9;
-      --surface: #ffffff;
-      --text: #16222c;
-      --muted: #5b6b79;
-      --border: #dce4ec;
-      --primary: #0d7a6f;
-      --primary-hover: #095e55;
-      --warn: #b45309;
-      --warn-bg: #fef3c7;
-      --danger: #b91c1c;
-      --danger-bg: #fee2e2;
-      --ok: #15803d;
-      --ok-bg: #dcfce7;
-      --radius: 12px;
+      --bg-top-peach: #F9D2B4;
+      --bg-top-lavender: #E5DCF7;
+      --bg-cream: #FCFBF9;
+      --card-white: #FFFFFF;
+      --ink: #2C2733;
+      --ink-muted: #847E8C;
+      --accent-peach: #EB8A4E;
+      --accent-peach-deep: #DC7436;
+      --accent-lavender: #9D8AE0;
+      --accent-mint: #6CC4A1;
+      --pastel-peach-tile: #FCE5D4;
+      --pastel-lavender-tile: #ECE6FA;
+      --pastel-mint-tile: #DDF3EA;
+      --shadow-float: 0 22px 44px -12px rgba(173, 128, 98, 0.24), 0 4px 14px rgba(44, 39, 51, 0.04);
+      --shadow-soft: 0 10px 26px -8px rgba(44, 39, 51, 0.08);
+      --radius-xl: 30px;
+      --radius-lg: 22px;
+      --radius-pill: 999px;
     }
-    * { box-sizing: border-box; }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
     body {
-      margin: 0;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      background: var(--bg);
-      color: var(--text);
-      line-height: 1.45;
-      padding: 16px;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Inter, sans-serif;
+      background: #EFECE9;
+      color: var(--ink);
+      display: flex;
+      justify-content: center;
+      min-height: 100vh;
     }
-    .container {
-      max-width: 680px;
-      margin: 0 auto;
+
+    .app-shell {
+      width: 100%;
+      max-width: 430px;
+      min-height: 100vh;
+      background: linear-gradient(175deg, var(--bg-top-peach) 0%, #FBE8D9 34%, var(--bg-cream) 64%, #F6F3FA 100%);
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      overflow-x: hidden;
+      transition: background 0.35s ease;
+    }
+
+    .app-shell.mode-lavender {
+      background: linear-gradient(175deg, var(--bg-top-lavender) 0%, #F1ECFA 36%, var(--bg-cream) 68%, #FAF6F2 100%);
+    }
+
+    /* TOP BAR */
+    .top-header {
+      padding: 18px 20px 8px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .brand-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(255, 255, 255, 0.78);
+      backdrop-filter: blur(10px);
+      padding: 6px 13px 6px 8px;
+      border-radius: var(--radius-pill);
+      box-shadow: 0 4px 12px rgba(44, 39, 51, 0.05);
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--ink);
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .pill-control {
+      background: rgba(255, 255, 255, 0.85);
+      border: none;
+      border-radius: var(--radius-pill);
+      padding: 7px 12px;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--ink);
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(44, 39, 51, 0.05);
+    }
+
+    .pill-control input[type="date"],
+    .pill-control input[type="time"] {
+      border: none;
+      background: transparent;
+      font-family: inherit;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--ink);
+      outline: none;
+    }
+
+    .hero-heading {
+      text-align: center;
+      padding: 6px 20px 16px;
+    }
+    .hero-heading h1 {
+      font-size: 22px;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      color: #FFFFFF;
+      text-shadow: 0 2px 12px rgba(179, 114, 72, 0.25);
+    }
+    .app-shell.mode-lavender .hero-heading h1 {
+      color: var(--ink);
+      text-shadow: none;
+    }
+    .hero-heading p {
+      font-size: 12px;
+      font-weight: 600;
+      color: rgba(44, 39, 51, 0.65);
+      margin-top: 2px;
+    }
+
+    /* BANNERS */
+    .banner-stack {
+      padding: 0 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .alert-pill {
+      display: none;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 10px 14px;
+      border-radius: 18px;
+      font-size: 12px;
+      font-weight: 600;
+      background: rgba(255, 255, 255, 0.92);
+      box-shadow: var(--shadow-soft);
+    }
+    .alert-pill.show { display: flex; }
+    .alert-pill.success { border-left: 4px solid var(--accent-mint); }
+    .alert-pill.warn { border-left: 4px solid var(--accent-peach); }
+    .alert-pill.error { border-left: 4px solid #E15B64; }
+
+    .btn-pill-sm {
+      border: none;
+      border-radius: var(--radius-pill);
+      padding: 6px 12px;
+      font-size: 11px;
+      font-weight: 700;
+      cursor: pointer;
+      background: var(--ink);
+      color: #FFF;
+      white-space: nowrap;
+    }
+    .btn-pill-sm.danger { background: #E15B64; }
+
+    /* MAIN CONTENT */
+    .main-scroll {
+      flex: 1;
+      padding: 4px 18px 104px;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+
+    .tab-view { display: none; flex-direction: column; gap: 18px; }
+    .tab-view.active { display: flex; }
+
+    /* STACKED FLOATING HERO SPOTLIGHT CARD (CENTER REACH) */
+    .spotlight-stack {
+      position: relative;
+      padding-top: 10px;
+      padding-bottom: 12px;
+    }
+    .stack-back-2 {
+      position: absolute;
+      left: 24px;
+      right: 24px;
+      bottom: 0;
+      height: 50px;
+      background: rgba(255, 255, 255, 0.55);
+      border-radius: var(--radius-xl);
+      transform: rotate(1.6deg);
+      z-index: 1;
+    }
+    .stack-back-1 {
+      position: absolute;
+      left: 12px;
+      right: 12px;
+      bottom: 6px;
+      height: 60px;
+      background: rgba(255, 255, 255, 0.8);
+      border-radius: var(--radius-xl);
+      transform: rotate(-1.3deg);
+      z-index: 2;
+    }
+    .spotlight-card {
+      position: relative;
+      z-index: 3;
+      background: var(--card-white);
+      border-radius: var(--radius-xl);
+      padding: 22px 20px 24px;
+      box-shadow: var(--shadow-float);
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .spot-top-meta {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 14px;
+    }
+    .spot-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: #FFF2E8;
+      color: var(--accent-peach-deep);
+      padding: 5px 11px;
+      border-radius: var(--radius-pill);
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0.03em;
+    }
+    .spot-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--accent-peach);
+    }
+    .spot-dose-count {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--ink-muted);
+    }
+
+    .spot-med-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--ink-muted);
+      margin-bottom: 4px;
+    }
+    .spot-big-time {
+      font-size: 44px;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      line-height: 1.05;
+      color: var(--ink);
+      margin-bottom: 6px;
+    }
+    .spot-sub-note {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--ink-muted);
+      margin-bottom: 20px;
+    }
+
+    /* LARGE CENTER THUMB-REACH BUTTON */
+    .btn-primary-center {
+      width: 100%;
+      max-width: 280px;
+      padding: 16px 24px;
+      border: none;
+      border-radius: var(--radius-pill);
+      background: linear-gradient(135deg, #F39B62 0%, #E47D3E 100%);
+      color: #FFFFFF;
+      font-size: 16px;
+      font-weight: 800;
+      letter-spacing: 0.02em;
+      cursor: pointer;
+      box-shadow: 0 12px 24px -6px rgba(228, 125, 62, 0.48);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: transform 0.12s ease;
+    }
+    .btn-primary-center:active { transform: scale(0.97); }
+    .btn-primary-center.completed {
+      background: linear-gradient(135deg, #74CCA8 0%, #56B48E 100%);
+      box-shadow: 0 12px 24px -6px rgba(86, 180, 142, 0.4);
+    }
+
+    .btn-snooze-link {
+      margin-top: 12px;
+      background: #F6F4F9;
+      border: none;
+      border-radius: var(--radius-pill);
+      padding: 8px 18px;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--ink-muted);
+      cursor: pointer;
+    }
+
+    /* PASTEL PROGRESS TRACK */
+    .progress-ribbon {
+      background: rgba(255, 255, 255, 0.86);
+      border-radius: var(--radius-lg);
+      padding: 14px 16px;
+      box-shadow: var(--shadow-soft);
+    }
+    .ribbon-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 12px;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+    .ribbon-track {
+      height: 10px;
+      border-radius: var(--radius-pill);
+      background: #EFEBF5;
+      overflow: hidden;
+    }
+    .ribbon-fill {
+      height: 100%;
+      border-radius: var(--radius-pill);
+      background: linear-gradient(90deg, #B39EF0 0%, #F19B66 100%);
+      transition: width 0.3s ease;
+    }
+
+    /* 2-COLUMN PASTEL DOSE CARDS */
+    .section-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 2px;
+    }
+    .section-head h2 {
+      font-size: 14px;
+      font-weight: 800;
+      color: var(--ink);
+    }
+    .section-head span {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--ink-muted);
+    }
+
+    .queue-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+    }
+    .dose-card {
+      border-radius: var(--radius-lg);
+      padding: 15px 14px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      min-height: 132px;
+      box-shadow: 0 8px 20px -8px rgba(44, 39, 51, 0.08);
+    }
+    .dose-card.pastel-peach { background: var(--pastel-peach-tile); }
+    .dose-card.pastel-lavender { background: var(--pastel-lavender-tile); }
+    .dose-card.pastel-mint { background: var(--pastel-mint-tile); }
+
+    .card-time {
+      font-size: 22px;
+      font-weight: 800;
+      color: var(--ink);
+      letter-spacing: -0.02em;
+    }
+    .card-name {
+      font-size: 12px;
+      font-weight: 700;
+      color: rgba(44, 39, 51, 0.78);
+      margin-top: 3px;
+      line-height: 1.3;
+    }
+    .card-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 14px;
+      gap: 6px;
+    }
+    .card-chip {
+      font-size: 10px;
+      font-weight: 800;
+      padding: 4px 8px;
+      border-radius: var(--radius-pill);
+      background: rgba(255, 255, 255, 0.72);
+      color: var(--ink);
+    }
+    .card-action {
+      border: none;
+      border-radius: var(--radius-pill);
+      padding: 6px 11px;
+      font-size: 11px;
+      font-weight: 800;
+      background: #FFFFFF;
+      color: var(--ink);
+      cursor: pointer;
+      box-shadow: 0 3px 8px rgba(44, 39, 51, 0.08);
+    }
+    .card-action.done {
+      background: var(--ink);
+      color: #FFFFFF;
+    }
+
+    /* REGIMEN LIST (TAB 2) */
+    .regimen-card {
+      background: var(--card-white);
+      border-radius: var(--radius-lg);
+      padding: 16px;
+      box-shadow: var(--shadow-soft);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+    .regimen-info h3 { font-size: 15px; font-weight: 800; }
+    .regimen-info p { font-size: 12px; color: var(--ink-muted); margin-top: 3px; font-weight: 600; }
+    .btn-del {
+      border: none;
+      background: #FDECEC;
+      color: #D64550;
+      border-radius: var(--radius-pill);
+      padding: 8px 13px;
+      font-size: 11px;
+      font-weight: 800;
+      cursor: pointer;
+    }
+
+    /* ADD FORM (TAB 3) */
+    .soft-form {
+      background: var(--card-white);
+      border-radius: var(--radius-xl);
+      padding: 20px;
+      box-shadow: var(--shadow-float);
       display: flex;
       flex-direction: column;
       gap: 14px;
     }
-    .card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 16px;
-      box-shadow: 0 1px 3px rgba(16, 24, 40, 0.04);
+    .field-group label {
+      display: block;
+      font-size: 11px;
+      font-weight: 800;
+      color: var(--ink-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      margin-bottom: 6px;
     }
-    h1 { font-size: 1.25rem; margin: 0 0 4px 0; }
-    h2 { font-size: 1rem; margin: 0 0 10px 0; }
-    .sub { color: var(--muted); font-size: 0.875rem; margin: 0; }
-    .row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
-    .between { justify-content: space-between; }
-    label { font-size: 0.82rem; font-weight: 600; color: var(--muted); display: block; margin-bottom: 4px; }
-    input[type="text"], input[type="number"], input[type="time"], input[type="date"] {
+    .field-group input,
+    .field-group select {
       width: 100%;
-      min-height: 40px;
-      padding: 8px 10px;
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      font-size: 0.95rem;
-      background: #fff;
-      color: var(--text);
-    }
-    .grid-2 {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-      gap: 10px;
-    }
-    button {
-      min-height: 40px;
-      padding: 8px 14px;
-      border: none;
-      border-radius: 8px;
-      font-weight: 600;
-      font-size: 0.9rem;
-      cursor: pointer;
-    }
-    .btn-primary { background: var(--primary); color: #fff; }
-    .btn-primary:hover { background: var(--primary-hover); }
-    .btn-secondary { background: #e6edf3; color: var(--text); }
-    .btn-warn { background: var(--warn-bg); color: var(--warn); border: 1px solid #fcd34d; }
-    .btn-danger { background: var(--danger); color: #fff; }
-    .btn-sm { min-height: 32px; padding: 4px 10px; font-size: 0.8rem; }
-    .badge {
-      display: inline-block;
-      padding: 2px 8px;
-      border-radius: 999px;
-      font-size: 0.75rem;
-      font-weight: 700;
-    }
-    .badge-pending { background: #e0f2fe; color: #0369a1; }
-    .badge-snoozed { background: var(--warn-bg); color: var(--warn); }
-    .badge-taken { background: var(--ok-bg); color: var(--ok); }
-    .badge-muted { background: #eef2f6; color: var(--muted); }
-    .badge-strict { background: var(--danger-bg); color: var(--danger); }
-    .alert {
       padding: 12px 14px;
-      border-radius: 10px;
-      font-size: 0.88rem;
-      display: none;
-    }
-    .alert.show { display: block; }
-    .alert-warn { background: var(--warn-bg); color: var(--warn); border: 1px solid #fcd34d; }
-    .alert-danger { background: var(--danger-bg); color: var(--danger); border: 1px solid #fca5a5; }
-    .alert-ok { background: var(--ok-bg); color: var(--ok); border: 1px solid #86efac; }
-    .dose-item {
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 12px;
-      margin-bottom: 10px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 10px;
-      flex-wrap: wrap;
-    }
-    .dose-item:last-child { margin-bottom: 0; }
-    .checkbox-row {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      font-size: 0.9rem;
+      border: 1.5px solid #ECE8F2;
+      border-radius: 16px;
+      background: #FAF9FC;
+      font-family: inherit;
+      font-size: 14px;
       font-weight: 600;
-      margin-top: 8px;
+      color: var(--ink);
+      outline: none;
     }
-    .checkbox-row input { width: 18px; height: 18px; }
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+    /* MINIMALIST FLOATING BOTTOM BAR */
+    .bottom-bar-wrap {
+      position: fixed;
+      bottom: 16px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: calc(100% - 36px);
+      max-width: 394px;
+      z-index: 50;
+    }
+    .bottom-bar {
+      background: rgba(255, 255, 255, 0.92);
+      backdrop-filter: blur(14px);
+      border-radius: var(--radius-pill);
+      padding: 8px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-around;
+      box-shadow: 0 12px 30px rgba(44, 39, 51, 0.12);
+    }
+    .nav-item {
+      border: none;
+      background: transparent;
+      padding: 8px 16px;
+      border-radius: var(--radius-pill);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      font-weight: 800;
+      color: var(--ink-muted);
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    .nav-item.active {
+      background: #FFF1E6;
+      color: var(--accent-peach-deep);
+    }
   </style>
 </head>
 <body>
-  <div class="container">
-    <div class="card">
-      <div class="row between">
-        <div>
-          <h1>Pengingat Obat Dynamic-Interval</h1>
-          <p class="sub">Jadwal bergeser otomatis mengikuti jam minum aktual</p>
-        </div>
-        <div class="row">
-          <button id="btnUndo" class="btn-secondary" type="button">Undo</button>
-          <button id="btnResetDemo" class="btn-secondary" type="button">Reset Demo</button>
+  <div class="app-shell" id="appShell">
+    <!-- TOP BAR -->
+    <header class="top-header">
+      <div class="brand-chip">
+        <!-- Sunrise Half-Tablet Brand Mark -->
+        <svg width="22" height="22" viewBox="0 0 36 36" fill="none">
+          <rect width="36" height="36" rx="10" fill="#FAF8FF"/>
+          <path d="M18 6V12M11 8.5L14 13.5M25 8.5L22 13.5M6.5 14L11.5 16.5M29.5 14L24.5 16.5" stroke="#F19B66" stroke-width="2" stroke-linecap="round"/>
+          <defs>
+            <linearGradient id="sunTablet" x1="18" y1="14" x2="18" y2="31" gradientUnits="userSpaceOnUse">
+              <stop offset="0%" stop-color="#F7B385"/>
+              <stop offset="100%" stop-color="#B9A3EE"/>
+            </linearGradient>
+          </defs>
+          <path d="M6 31C6 22.7157 11.3726 16 18 16C24.6274 16 30 22.7157 30 31H6Z" fill="url(#sunTablet)"/>
+          <path d="M13.5 24.5C14.2 25.4 15.3 25.4 16 24.5M20 24.5C20.7 25.4 21.8 25.4 22.5 24.5M16.5 27.2C17.4 28.1 18.6 28.1 19.5 27.2" stroke="#2C2733" stroke-width="1.6" stroke-linecap="round"/>
+        </svg>
+        YourDose
+      </div>
+
+      <div class="header-actions">
+        <label class="pill-control" title="Tanggal aktif">
+          <input type="date" id="inputTanggalAktif" />
+        </label>
+        <div class="pill-control" title="Jam bangun / simulasi">
+          <span>☀</span>
+          <input type="time" id="inputJamSimulasi" value="07:00" />
+          <button type="button" id="btnApplyWake" style="border:none;background:none;font-weight:800;color:#DC7436;cursor:pointer;">Set</button>
         </div>
       </div>
-      <div class="grid-2" style="margin-top: 12px;">
-        <div>
-          <label for="inputTanggalAktif">Tanggal Aktif</label>
-          <input id="inputTanggalAktif" type="date" value="2026-11-16" />
-        </div>
-        <div>
-          <label for="inputJamSimulasi">Jam Simulasi / Bangun Tidur</label>
-          <input id="inputJamSimulasi" type="time" value="08:00" />
-        </div>
+    </header>
+
+    <div class="hero-heading">
+      <h1 id="pageHeading">Jadwal Obat Hari Ini</h1>
+      <p id="pageSubheading">Interval dinamis menyesuaikan waktu minum terakhir Anda</p>
+    </div>
+
+    <!-- ALERT / UNDO BANNERS -->
+    <div class="banner-stack">
+      <div class="alert-pill success" id="bannerSuccess">
+        <span id="successText">Tersimpan</span>
+        <button type="button" class="btn-pill-sm" id="btnUndo">Undo</button>
       </div>
-      <!-- ADDED: Temuan 2 - Tombol khusus Wake-Up Trigger untuk menyegarkan jadwal pagi -->
-      <div style="margin-top: 10px;">
-        <button id="btnApplyWake" class="btn-secondary btn-sm" type="button">Terapkan Jam Bangun (Wake-Up Trigger)</button>
+      <div class="alert-pill warn" id="bannerBentrok">
+        <span id="bentrokText">Ada jadwal berdekatan</span>
+      </div>
+      <div class="alert-pill error" id="bannerError">
+        <span id="errorText">Jarak aman belum terpenuhi</span>
+        <button type="button" class="btn-pill-sm danger" id="btnForceOverride">Tetap Minum</button>
       </div>
     </div>
 
-    <div id="bannerSuccess" class="alert alert-ok"></div>
-    <div id="bannerBentrok" class="alert alert-warn"></div>
-    <div id="bannerError" class="alert alert-danger">
-      <div id="errorPesan"></div>
-      <div id="overrideBox" style="margin-top: 8px; display: none;">
-        <button id="btnForceOverride" class="btn-danger" type="button">Paksa Catat (Override)</button>
-      </div>
-    </div>
+    <!-- MAIN CONTENT -->
+    <main class="main-scroll">
+      <!-- TAB 1: TODAY -->
+      <section class="tab-view active" id="view-today">
+        <!-- FLOATING CENTER HERO SPOTLIGHT -->
+        <div class="spotlight-stack">
+          <div class="stack-back-2"></div>
+          <div class="stack-back-1"></div>
+          <div class="spotlight-card" id="spotlightHero"></div>
+        </div>
 
-    <div class="card">
-      <h2>Antrean Jadwal Aktif (Kronologis)</h2>
-      <div id="listAntrean"></div>
-    </div>
-
-    <div class="card">
-      <h2>Semua Regimen &amp; Log Hari Ini</h2>
-      <div id="listRegimen"></div>
-    </div>
-
-    <div class="card">
-      <h2>Tambah Regimen Obat Baru</h2>
-      <form id="formTambahObat">
-        <div class="grid-2">
-          <div>
-            <label for="inputNamaObat">Nama Obat</label>
-            <input id="inputNamaObat" type="text" placeholder="cth: Amoxicillin 500mg" required />
+        <!-- PROGRESS BAR -->
+        <div class="progress-ribbon">
+          <div class="ribbon-top">
+            <span>Kepatuhan Dosis Hari Ini</span>
+            <span id="adherenceLabel">0%</span>
           </div>
-          <div>
-            <label for="inputDosisHari">Dosis per Hari</label>
-            <input id="inputDosisHari" type="number" min="1" max="12" value="3" required />
-          </div>
-          <div>
-            <label for="inputIntervalMenit">Interval (Menit)</label>
-            <input id="inputIntervalMenit" type="number" min="15" value="240" required />
-          </div>
-          <div>
-            <label for="inputMinGapMenit">Jarak Aman Min (Menit)</label>
-            <input id="inputMinGapMenit" type="number" min="0" value="180" required />
-          </div>
-          <div>
-            <label for="inputWakeTime">Target Pagi Paling Awal</label>
-            <input id="inputWakeTime" type="time" value="07:00" required />
-          </div>
-          <div>
-            <label for="inputSleepCutoff">Batas Jam Tidur</label>
-            <input id="inputSleepCutoff" type="time" value="22:30" required />
+          <div class="ribbon-track">
+            <div class="ribbon-fill" id="adherenceFill" style="width:0%"></div>
           </div>
         </div>
-        <div class="row" style="margin-top: 8px; gap: 18px;">
-          <label class="checkbox-row">
-            <input id="chkStrict" type="checkbox" />
-            Mode Strict (Antibiotik: tetap bunyi lewat jam tidur)
-          </label>
-          <label class="checkbox-row">
-            <input id="chkVibrate" type="checkbox" checked />
-            Mode Getar Jam Kerja
-          </label>
+
+        <!-- 2-COLUMN QUEUE -->
+        <div class="section-head">
+          <h2>Semua Jadwal Hari Ini</h2>
+          <span id="queueSummary">0 dosis</span>
         </div>
-        <div style="margin-top: 12px;">
-          <button class="btn-primary" type="submit">Tambah ke Jadwal</button>
+        <div class="queue-grid" id="listAntrean"></div>
+      </section>
+
+      <!-- TAB 2: REGIMEN -->
+      <section class="tab-view" id="view-regimen">
+        <div class="section-head">
+          <h2>Daftar Regimen Aktif</h2>
+          <button type="button" class="btn-pill-sm" id="btnResetDemo">Reset Demo</button>
         </div>
-      </form>
+        <div id="listRegimen" style="display:flex;flex-direction:column;gap:12px;"></div>
+      </section>
+
+      <!-- TAB 3: ADD MEDICATION -->
+      <section class="tab-view" id="view-add">
+        <form class="soft-form" id="formTambahObat">
+          <div class="field-group">
+            <label for="inputNamaObat">Nama Obat / Suplemen</label>
+            <input type="text" id="inputNamaObat" placeholder="Contoh: Amoxicillin 500mg" required />
+          </div>
+          <div class="grid-2">
+            <div class="field-group">
+              <label for="inputDosisPerHari">Dosis per Hari</label>
+              <select id="inputDosisPerHari">
+                <option value="1">1x Sehari (24 jam)</option>
+                <option value="2">2x Sehari (12 jam)</option>
+                <option value="3" selected>3x Sehari (8 jam)</option>
+                <option value="4">4x Sehari (6 jam)</option>
+              </select>
+            </div>
+            <div class="field-group">
+              <label for="inputMinGap">Jarak Aman Min (Menit)</label>
+              <input type="number" id="inputMinGap" value="360" min="30" max="1440" />
+            </div>
+          </div>
+          <div class="grid-2">
+            <div class="field-group">
+              <label for="inputEarliestWake">Jam Mulai Pagi</label>
+              <input type="time" id="inputEarliestWake" value="07:00" />
+            </div>
+            <div class="field-group">
+              <label for="inputSleepCutoff">Batas Tidur Malam</label>
+              <input type="time" id="inputSleepCutoff" value="22:30" />
+            </div>
+          </div>
+          <div class="field-group">
+            <label for="inputAlarmMode">Mode Notifikasi Android</label>
+            <select id="inputAlarmMode">
+              <option value="NORMAL">Normal (Suara &amp; Getar)</option>
+              <option value="STRICT">Strict Antibiotik (Tembus DND)</option>
+              <option value="SILENT_VIBRATE">Mode Kerja (Getar Saja)</option>
+            </select>
+          </div>
+          <button type="submit" class="btn-primary-center" style="max-width:100%;">
+            + Simpan &amp; Jadwalkan Obat
+          </button>
+        </form>
+      </section>
+    </main>
+
+    <!-- FLOATING BOTTOM NAV -->
+    <div class="bottom-bar-wrap">
+      <nav class="bottom-bar">
+        <button type="button" class="nav-item active" data-nav="today">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5L12 3l9 7.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1v-9.5z"/></svg>
+          Hari Ini
+        </button>
+        <button type="button" class="nav-item" data-nav="regimen">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="3"/><line x1="7" y1="9" x2="17" y2="9"/><line x1="7" y1="14" x2="13" y2="14"/></svg>
+          Regimen
+        </button>
+        <button type="button" class="nav-item" data-nav="add">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Tambah
+        </button>
+      </nav>
     </div>
   </div>
 
+  <!-- Core Engine & Store Modules -->
   <script src="dynamic_dose_scheduler.js"></script>
   <script src="medication_store.js"></script>
   <script>
-    const STORAGE_KEY = "dynamic_dose_store_v1";
-    let pendingOverride = null;
+    (function () {
+      const STORAGE_KEY = "dynamic_dose_store_v1";
+      const PASTEL_CLASSES = ["pastel-peach", "pastel-lavender", "pastel-mint"];
+      let pendingOverrideCtx = null;
 
-    function escapeHtml(str) {
-      return String(str)
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&#39;");
-    }
-
-    function muatAtauInisialisasiStore() {
-      const saved = localStorage.getItem(STORAGE_KEY);
-      if (saved) {
-        try {
-          return imporStoreJSON(saved);
-        } catch (_) {}
-      }
-      let s = buatStore("2026-11-16", "08:00");
-      s = tambahObat(s, {
-        id: "MED-AMOX",
-        namaObat: "Amoxicillin 500mg",
-        dosisPerHari: 3,
-        intervalMenit: 480,
-        minGapMenit: 360,
-        earliestWakeTime: "07:00",
-        sleepCutoffTime: "22:30",
-        autoSnoozeMenit: 10,
-        maxSnoozeCount: 3,
-        silentVibrationOnly: false,
-        strictInterval: true
-      }).store;
-      s = tambahObat(s, {
-        id: "MED-PARA",
-        namaObat: "Paracetamol 500mg",
-        dosisPerHari: 4,
-        intervalMenit: 240,
-        minGapMenit: 180,
-        earliestWakeTime: "07:00",
-        sleepCutoffTime: "22:30",
-        autoSnoozeMenit: 10,
-        maxSnoozeCount: 3,
-        silentVibrationOnly: true,
-        strictInterval: false
-      }).store;
-      simpanStore(s);
-      return s;
-    }
-
-    function simpanStore(s) {
-      localStorage.setItem(STORAGE_KEY, eksporStoreJSON(s));
-    }
-
-    let appStore = muatAtauInisialisasiStore();
-
-    // ADDED: Temuan 2 - Sinkronkan input kontrol tanggal & jam dari appStore
-    function sinkronkanInputDariStore() {
-      if (appStore.tanggalAktif) {
-        document.getElementById("inputTanggalAktif").value = appStore.tanggalAktif;
-      }
-      if (appStore.wakeTimeAktual) {
-        document.getElementById("inputJamSimulasi").value = appStore.wakeTimeAktual;
-      }
-    }
-
-    // ADDED: Temuan 4 - Notifikasi status sukses singkat
-    function tampilkanSukses(pesan) {
-      const el = document.getElementById("bannerSuccess");
-      el.textContent = pesan;
-      el.classList.add("show");
-    }
-
-    function sembunyikanSukses() {
-      document.getElementById("bannerSuccess").classList.remove("show");
-    }
-
-    function tampilkanError(pesan, overridePayload = null) {
-      sembunyikanSukses();
-      const el = document.getElementById("bannerError");
-      document.getElementById("errorPesan").textContent = pesan;
-      const box = document.getElementById("overrideBox");
-      if (overridePayload) {
-        pendingOverride = overridePayload;
-        box.style.display = "block";
-      } else {
-        pendingOverride = null;
-        box.style.display = "none";
-      }
-      el.classList.add("show");
-    }
-
-    function sembunyikanError() {
-      pendingOverride = null;
-      document.getElementById("bannerError").classList.remove("show");
-    }
-
-    function render() {
-      const bentrok = deteksiBentrokJadwal(appStore, 15);
-      const bannerBentrok = document.getElementById("bannerBentrok");
-      if (bentrok.length > 0) {
-        bannerBentrok.innerHTML =
-          "<strong>Peringatan Jadwal Berdekatan:</strong> " +
-          bentrok.map((b) => `${escapeHtml(b.obatA)} &amp; ${escapeHtml(b.obatB)} (selisih ${b.selisihMenit} mnt)`).join("; ");
-        bannerBentrok.classList.add("show");
-      } else {
-        bannerBentrok.classList.remove("show");
+      function escapeHtml(str) {
+        return String(str ?? "")
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;")
+          .replace(/'/g, "&#39;");
       }
 
-      // CHANGED: Temuan 1 - Gunakan data-* attributes (tanpa inline onclick) untuk event delegation
-      const antrean = ambilAntreanJadwal(appStore);
-      const listAntrean = document.getElementById("listAntrean");
-      if (antrean.length === 0) {
-        listAntrean.innerHTML = '<p class="sub">Semua dosis hari ini sudah selesai atau ditunda.</p>';
-      } else {
-        listAntrean.innerHTML = antrean.map((item) => {
-          const badgeCls = item.alarmMode === "FORCE_SOUND" ? "badge-strict" : (item.status === "SNOOZED" ? "badge-snoozed" : "badge-pending");
-          const jamSaja = item.waktuLabel.split(" ")[1] || "08:00";
-          return `
-            <div class="dose-item">
-              <div>
-                <strong>${escapeHtml(item.namaObat)}</strong> — Dosis #${item.dosisKe}<br/>
-                <span class="sub">${escapeHtml(item.waktuLabel)}</span>
-                <span class="badge ${badgeCls}">${escapeHtml(item.status)} · ${escapeHtml(item.alarmMode)}</span>
-              </div>
-              <div class="row">
-                <button class="btn-primary" type="button" data-action="minum" data-med-id="${escapeHtml(item.medId)}" data-dosis="${item.dosisKe}">Minum</button>
-                <button class="btn-warn" type="button" data-action="snooze" data-med-id="${escapeHtml(item.medId)}" data-dosis="${item.dosisKe}" data-jam="${escapeHtml(jamSaja)}">Snooze</button>
-              </div>
-            </div>`;
-        }).join("");
+      function todayIsoDate() {
+        const now = new Date();
+        const y = now.getFullYear();
+        const m = String(now.getMonth() + 1).padStart(2, "0");
+        const d = String(now.getDate()).padStart(2, "0");
+        return `${y}-${m}-${d}`;
       }
 
-      // CHANGED: Temuan 4 - Tambah tombol Hapus per regimen obat dengan data-action="hapus"
-      const listRegimen = document.getElementById("listRegimen");
-      const entries = Object.entries(appStore.meds);
-      if (entries.length === 0) {
-        listRegimen.innerHTML = '<p class="sub">Belum ada regimen obat. Tambahkan melalui formulir di bawah.</p>';
-      } else {
-        listRegimen.innerHTML = entries.map(([medId, med]) => {
-          const rows = med.jadwal.map((d) => {
-            const stCls = d.status === "TAKEN" ? "badge-taken" : (d.status === "DEFERRED_SLEEP" || d.status === "MISSED" ? "badge-muted" : "badge-pending");
-            return `<span class="badge ${stCls}" style="margin: 2px;">#${d.dosisKe}: ${escapeHtml(d.waktuTerjadwal)} (${escapeHtml(d.status)})</span>`;
-          }).join("");
-          return `
-            <div style="padding: 10px 0; border-bottom: 1px solid var(--border);">
-              <div class="row between">
-                <div>
-                  <strong>${escapeHtml(med.regimen.namaObat)}</strong>
-                  ${med.regimen.strictInterval ? '<span class="badge badge-strict">STRICT</span>' : ""}
-                </div>
-                <button class="btn-secondary btn-sm" type="button" data-action="hapus" data-med-id="${escapeHtml(medId)}">Hapus</button>
-              </div>
-              <div style="margin-top: 6px;">${rows}</div>
-            </div>`;
-        }).join("");
+      function currentHhMm() {
+        const now = new Date();
+        return `${String(now.getHours()).padStart(2, "0")}:${String(now.getMinutes()).padStart(2, "0")}`;
       }
-    }
 
-    function aksiMinum(medId, dosisKe, forceOverride = false) {
-      sembunyikanError();
-      const tgl = document.getElementById("inputTanggalAktif").value;
-      const jam = document.getElementById("inputJamSimulasi").value;
-      const res = catatMinumObat(appStore, medId, dosisKe, tgl, jam, { forceOverride });
-      if (!res.ok) {
-        const bisaOverride = res.errorCode === "MIN_GAP_VIOLATION";
-        tampilkanError(res.pesan, bisaOverride ? { medId, dosisKe } : null);
-        return;
+      function toMinutes(hhmm) {
+        const [h, m] = String(hhmm || "07:00").split(":").map(Number);
+        return (h * 60) + (m || 0);
       }
-      appStore = res.store;
-      simpanStore(appStore);
-      tampilkanSukses(`Dosis #${dosisKe} tercatat diminum pada ${tgl} ${jam}.`);
-      render();
-    }
 
-    function aksiSnooze(medId, dosisKe, jamAlarm) {
-      sembunyikanError();
-      const res = snoozeObat(appStore, medId, dosisKe, jamAlarm);
-      if (!res.ok) {
-        tampilkanError(res.pesan);
-        return;
-      }
-      appStore = res.store;
-      simpanStore(appStore);
-      tampilkanSukses(`Dosis #${dosisKe} di-snooze (+10 menit).`);
-      render();
-    }
-
-    // ADDED: Temuan 4 - Hapus regimen obat dari store
-    function aksiHapusObat(medId) {
-      sembunyikanError();
-      if (!appStore.meds[medId]) return;
-      const nama = appStore.meds[medId].regimen.namaObat;
-      const nextStore = JSON.parse(JSON.stringify(appStore));
-      delete nextStore.meds[medId];
-      appStore = nextStore;
-      simpanStore(appStore);
-      tampilkanSukses(`Regimen "${nama}" dihapus.`);
-      render();
-    }
-
-    // ADDED: Temuan 1 - Event delegation pada #listAntrean & #listRegimen
-    document.getElementById("listAntrean").addEventListener("click", (e) => {
-      const btn = e.target.closest("button[data-action]");
-      if (!btn) return;
-      const action = btn.getAttribute("data-action");
-      const medId = btn.getAttribute("data-med-id");
-      const dosisKe = Number(btn.getAttribute("data-dosis"));
-      if (action === "minum") {
-        aksiMinum(medId, dosisKe, false);
-      } else if (action === "snooze") {
-        aksiSnooze(medId, dosisKe, btn.getAttribute("data-jam"));
-      }
-    });
-
-    document.getElementById("listRegimen").addEventListener("click", (e) => {
-      const btn = e.target.closest("button[data-action='hapus']");
-      if (!btn) return;
-      aksiHapusObat(btn.getAttribute("data-med-id"));
-    });
-
-    // ADDED: Temuan 2 - Terapkan Wake-Up Trigger baru untuk obat yang belum diminum sama sekali
-    document.getElementById("btnApplyWake").addEventListener("click", () => {
-      sembunyikanError();
-      try {
-        const tgl = document.getElementById("inputTanggalAktif").value;
-        const wake = document.getElementById("inputJamSimulasi").value;
-        let nextStore = buatStore(tgl, wake);
-        let diperbarui = 0;
-        for (const [medId, med] of Object.entries(appStore.meds)) {
-          const adaTaken = med.jadwal.some((d) => d.status === "TAKEN");
-          if (adaTaken) {
-            nextStore.meds[medId] = med;
-          } else {
-            nextStore = tambahObat(nextStore, med.regimen, tgl, wake).store;
-            diperbarui++;
-          }
-        }
-        nextStore.history = appStore.history || [];
-        appStore = nextStore;
-        simpanStore(appStore);
-        tampilkanSukses(`Wake-Up Trigger diterapkan (${tgl} ${wake}) untuk ${diperbarui} regimen aktif.`);
-        render();
-      } catch (err) {
-        tampilkanError(err.message);
-      }
-    });
-
-    document.getElementById("btnForceOverride").addEventListener("click", () => {
-      if (pendingOverride) {
-        aksiMinum(pendingOverride.medId, pendingOverride.dosisKe, true);
-      }
-    });
-
-    document.getElementById("btnUndo").addEventListener("click", () => {
-      sembunyikanError();
-      const res = undoTerakhir(appStore);
-      if (!res.ok) {
-        tampilkanError(res.pesan);
-        return;
-      }
-      appStore = res.store;
-      simpanStore(appStore);
-      tampilkanSukses(`Aksi terakhir dibatalkan: ${res.undoneAction}`);
-      render();
-    });
-
-    document.getElementById("btnResetDemo").addEventListener("click", () => {
-      localStorage.removeItem(STORAGE_KEY);
-      sembunyikanError();
-      appStore = muatAtauInisialisasiStore();
-      sinkronkanInputDariStore(); // CHANGED: Temuan 2
-      tampilkanSukses("Data demo direset ke kondisi awal.");
-      render();
-    });
-
-    document.getElementById("formTambahObat").addEventListener("submit", (e) => {
-      e.preventDefault();
-      sembunyikanError();
-      try {
-        // CHANGED: Temuan 3 - Validasi namaObat tidak boleh kosong/spasi saja
-        const namaInput = document.getElementById("inputNamaObat");
-        const namaObat = namaInput.value.trim();
-        if (!namaObat) {
-          tampilkanError("Nama obat tidak boleh kosong.");
-          return;
-        }
-
-        const regimen = {
-          namaObat,
-          dosisPerHari: Number(document.getElementById("inputDosisHari").value),
-          intervalMenit: Number(document.getElementById("inputIntervalMenit").value),
-          minGapMenit: Number(document.getElementById("inputMinGapMenit").value),
-          earliestWakeTime: document.getElementById("inputWakeTime").value,
-          sleepCutoffTime: document.getElementById("inputSleepCutoff").value,
+      function buildSeedStore() {
+        const tgl = todayIsoDate();
+        let st = buatStore(tgl, "07:00");
+        st = tambahObat(st, {
+          id: "MED-AMOX",
+          namaObat: "Amoxicillin 500mg",
+          dosisPerHari: 3,
+          intervalMenit: 480,
+          minGapMenit: 360,
+          earliestWakeTime: "07:00",
+          sleepCutoffTime: "22:30",
           autoSnoozeMenit: 10,
           maxSnoozeCount: 3,
-          silentVibrationOnly: document.getElementById("chkVibrate").checked,
-          strictInterval: document.getElementById("chkStrict").checked
-        };
-        const tgl = document.getElementById("inputTanggalAktif").value;
-        const wake = document.getElementById("inputJamSimulasi").value;
-        const res = tambahObat(appStore, regimen, tgl, wake);
+          silentVibrationOnly: false,
+          strictInterval: true
+        }).store;
+        st = tambahObat(st, {
+          id: "MED-VITD",
+          namaObat: "Vitamin D3 1000 IU",
+          dosisPerHari: 1,
+          intervalMenit: 1440,
+          minGapMenit: 720,
+          earliestWakeTime: "08:30",
+          sleepCutoffTime: "22:30",
+          autoSnoozeMenit: 10,
+          maxSnoozeCount: 3,
+          silentVibrationOnly: true,
+          strictInterval: false
+        }).store;
+        return st;
+      }
+
+      let appStore = (() => {
+        try {
+          const saved = localStorage.getItem(STORAGE_KEY);
+          if (saved) {
+            const parsed = imporStoreJSON(saved);
+            if (parsed && parsed.meds && Object.keys(parsed.meds).length > 0) return parsed;
+          }
+        } catch (e) {}
+        return buildSeedStore();
+      })();
+
+      function simpanDanSinkron() {
+        const json = eksporStoreJSON(appStore);
+        try { localStorage.setItem(STORAGE_KEY, json); } catch (e) {}
+        if (window.AndroidBridge && typeof window.AndroidBridge.syncStoreToNative === "function") {
+          window.AndroidBridge.syncStoreToNative(json);
+        }
+      }
+
+      function sinkronkanInputDariStore() {
+        const elTgl = document.getElementById("inputTanggalAktif");
+        const elJam = document.getElementById("inputJamSimulasi");
+        if (elTgl) elTgl.value = appStore.tanggalAktif || todayIsoDate();
+        if (elJam) elJam.value = appStore.jamBangunAktual || "07:00";
+      }
+
+      function showBanner(type, text, overrideCtx = null) {
+        document.getElementById("bannerSuccess").classList.remove("show");
+        document.getElementById("bannerError").classList.remove("show");
+        pendingOverrideCtx = overrideCtx;
+
+        if (type === "success") {
+          document.getElementById("successText").textContent = text;
+          document.getElementById("bannerSuccess").classList.add("show");
+        } else if (type === "error") {
+          document.getElementById("errorText").textContent = text;
+          document.getElementById("bannerError").classList.add("show");
+        }
+      }
+
+      function ambilSemuaDosisUrut() {
+        const items = [];
+        const medList = Object.values(appStore.meds || {});
+        medList.forEach((med, mIdx) => {
+          (med.jadwal || []).forEach((d) => {
+            items.push({
+              medId: med.id,
+              namaObat: med.namaObat,
+              strictInterval: med.strictInterval,
+              silentVibrationOnly: med.silentVibrationOnly,
+              dosisKe: d.dosisKe,
+              totalDosis: med.jadwal.length,
+              waktuTerjadwal: d.waktuTerjadwal,
+              status: d.status,
+              pastelClass: PASTEL_CLASSES[mIdx % PASTEL_CLASSES.length]
+            });
+          });
+        });
+        return items.sort((a, b) => toMinutes(a.waktuTerjadwal) - toMinutes(b.waktuTerjadwal));
+      }
+
+      function aksiMinumObat(medId, dosisKe, forceOverride = false) {
+        const tgl = appStore.tanggalAktif || todayIsoDate();
+        const jamSekarang = currentHhMm();
+        const res = catatMinumObat(appStore, medId, dosisKe, tgl, jamSekarang, { forceOverride });
         if (!res.ok) {
-          tampilkanError(res.pesan);
+          showBanner("error", res.pesan || "Jarak aman dosis belum terpenuhi.", { medId, dosisKe });
           return;
         }
         appStore = res.store;
-        simpanStore(appStore);
-        namaInput.value = ""; // CHANGED: Temuan 3 - hanya kosongkan nama obat agar preferensi jam tetap terjaga
-        tampilkanSukses(`Regimen "${namaObat}" ditambahkan.`);
-        render();
-      } catch (err) {
-        tampilkanError(err.message);
+        simpanDanSinkron();
+        renderUI();
+        showBanner("success", `Dosis ke-${dosisKe} tercatat pukul ${jamSekarang}. Jadwal berikutnya disesuaikan.`);
       }
-    });
 
-    sinkronkanInputDariStore(); // CHANGED: Temuan 2
-    render();
+      function aksiSnoozeObat(medId, dosisKe) {
+        const jamSekarang = currentHhMm();
+        const res = snoozeObat(appStore, medId, dosisKe, jamSekarang);
+        if (!res.ok) {
+          showBanner("error", res.pesan || "Gagal menunda jadwal.");
+          return;
+        }
+        appStore = res.store;
+        simpanDanSinkron();
+        renderUI();
+        showBanner("success", `Jadwal ditunda +10 menit.`);
+      }
+
+      function aksiHapusObat(medId) {
+        const res = hapusObat(appStore, medId);
+        if (res.ok) {
+          appStore = res.store;
+          simpanDanSinkron();
+          renderUI();
+          showBanner("success", "Obat dihapus dari regimen.");
+        }
+      }
+
+      function renderUI() {
+        sinkronkanInputDariStore();
+        const semuaDosis = ambilSemuaDosisUrut();
+        const pendingDoses = semuaDosis.filter((d) => d.status !== "TAKEN");
+        const nextDose = pendingDoses[0] || semuaDosis[0];
+
+        // 1. Center Hero Spotlight Box
+        const heroEl = document.getElementById("spotlightHero");
+        if (nextDose) {
+          const isDone = nextDose.status === "TAKEN";
+          heroEl.innerHTML = `
+            <div class="spot-top-meta">
+              <span class="spot-badge"><span class="spot-dot"></span> ${isDone ? "SEMUA SELESAI" : "JADWAL TERDEKAT"}</span>
+              <span class="spot-dose-count">Dosis ${nextDose.dosisKe} dari ${nextDose.totalDosis}</span>
+            </div>
+            <div class="spot-med-title">${escapeHtml(nextDose.namaObat)}</div>
+            <div class="spot-big-time">${escapeHtml(nextDose.waktuTerjadwal)}</div>
+            <div class="spot-sub-note">${nextDose.strictInterval ? "Mode Strict Antibiotik" : nextDose.silentVibrationOnly ? "Mode Getar Kerja" : "Notifikasi Normal"}</div>
+            <button type="button" class="btn-primary-center ${isDone ? "completed" : ""}" data-action="minum" data-med-id="${escapeHtml(nextDose.medId)}" data-dosis-ke="${nextDose.dosisKe}" ${isDone ? "disabled" : ""}>
+              ${isDone ? "✓ Sudah Diminum" : "MINUM SEKARANG"}
+            </button>
+            ${!isDone ? `<button type="button" class="btn-snooze-link" data-action="snooze" data-med-id="${escapeHtml(nextDose.medId)}" data-dosis-ke="${nextDose.dosisKe}">⏰ Tunda +10 Menit</button>` : ""}
+          `;
+        } else {
+          heroEl.innerHTML = `
+            <div class="spot-med-title">Belum ada jadwal obat</div>
+            <div class="spot-sub-note" style="margin-top:8px;">Tambahkan obat pertama Anda melalui tab Tambah di bawah.</div>
+            <button type="button" class="btn-primary-center" data-nav-jump="add">+ Tambah Obat Baru</button>
+          `;
+        }
+
+        // 2. Adherence Progress
+        const takenCount = semuaDosis.filter((d) => d.status === "TAKEN").length;
+        const pct = semuaDosis.length ? Math.round((takenCount / semuaDosis.length) * 100) : 0;
+        document.getElementById("adherenceLabel").textContent = `${takenCount}/${semuaDosis.length} (${pct}%)`;
+        document.getElementById("adherenceFill").style.width = `${pct}%`;
+        document.getElementById("queueSummary").textContent = `${semuaDosis.length} jadwal`;
+
+        // 3. 2-Column Queue Grid
+        const antreanEl = document.getElementById("listAntrean");
+        antreanEl.innerHTML = semuaDosis.map((d) => {
+          const isDone = d.status === "TAKEN";
+          const modeTxt = d.strictInterval ? "STRICT" : d.silentVibrationOnly ? "GETAR" : "NORMAL";
+          return `
+            <div class="dose-card ${d.pastelClass}">
+              <div>
+                <div class="card-time">${escapeHtml(d.waktuTerjadwal)}</div>
+                <div class="card-name">${escapeHtml(d.namaObat)}</div>
+              </div>
+              <div class="card-footer">
+                <span class="card-chip">${modeTxt}</span>
+                <button type="button" class="card-action ${isDone ? "done" : ""}" data-action="minum" data-med-id="${escapeHtml(d.medId)}" data-dosis-ke="${d.dosisKe}" ${isDone ? "disabled" : ""}>
+                  ${isDone ? "✓ Selesai" : "Minum"}
+                </button>
+              </div>
+            </div>
+          `;
+        }).join("");
+
+        // 4. Regimen List (Tab 2)
+        const regEl = document.getElementById("listRegimen");
+        const meds = Object.values(appStore.meds || {});
+        regEl.innerHTML = meds.length ? meds.map((m) => `
+          <div class="regimen-card">
+            <div class="regimen-info">
+              <h3>${escapeHtml(m.namaObat)}</h3>
+              <p>${m.dosisPerHari}x sehari • Interval ${Math.round(m.intervalMenit / 60)} jam • Min gap ${m.minGapMenit} mnt</p>
+            </div>
+            <button type="button" class="btn-del" data-action="hapus" data-med-id="${escapeHtml(m.id)}">Hapus</button>
+          </div>
+        `).join("") : `<div class="regimen-card"><p>Belum ada regimen aktif.</p></div>`;
+
+        // 5. Conflict Detection
+        const bentrok = deteksiBentrokJadwal(appStore, 15);
+        const bannerBentrok = document.getElementById("bannerBentrok");
+        if (bentrok && bentrok.length > 0) {
+          document.getElementById("bentrokText").textContent = `${bentrok.length} jadwal obat berdekatan (<15 mnt).`;
+          bannerBentrok.classList.add("show");
+        } else {
+          bannerBentrok.classList.remove("show");
+        }
+      }
+
+      function switchTab(tabName) {
+        document.querySelectorAll(".nav-item").forEach((b) => b.classList.toggle("active", b.dataset.nav === tabName));
+        document.querySelectorAll(".tab-view").forEach((v) => v.classList.toggle("active", v.id === `view-${tabName}`));
+        const shell = document.getElementById("appShell");
+        const h1 = document.getElementById("pageHeading");
+        const p = document.getElementById("pageSubheading");
+
+        if (tabName === "regimen") {
+          shell.classList.add("mode-lavender");
+          h1.textContent = "Regimen Obat";
+          p.textContent = "Kelola aturan interval dan batas aman harian";
+        } else if (tabName === "add") {
+          shell.classList.add("mode-lavender");
+          h1.textContent = "Tambah Obat Baru";
+          p.textContent = "Jadwal otomatis dihitung dari jam bangun Anda";
+        } else {
+          shell.classList.remove("mode-lavender");
+          h1.textContent = "Jadwal Obat Hari Ini";
+          p.textContent = "Interval dinamis menyesuaikan waktu minum terakhir Anda";
+        }
+      }
+
+      // Event Delegation (No inline onclick)
+      document.addEventListener("click", (e) => {
+        const actEl = e.target.closest("[data-action]");
+        if (actEl) {
+          const action = actEl.dataset.action;
+          const medId = actEl.dataset.medId;
+          const dosisKe = Number(actEl.dataset.dosisKe);
+          if (action === "minum") aksiMinumObat(medId, dosisKe, false);
+          if (action === "snooze") aksiSnoozeObat(medId, dosisKe);
+          if (action === "hapus") aksiHapusObat(medId);
+          return;
+        }
+
+        const navEl = e.target.closest("[data-nav]");
+        if (navEl) {
+          switchTab(navEl.dataset.nav);
+          return;
+        }
+
+        const jumpEl = e.target.closest("[data-nav-jump]");
+        if (jumpEl) {
+          switchTab(jumpEl.dataset.navJump);
+        }
+      });
+
+      document.getElementById("btnApplyWake").addEventListener("click", () => {
+        const tgl = document.getElementById("inputTanggalAktif").value || todayIsoDate();
+        const jam = document.getElementById("inputJamSimulasi").value || "07:00";
+        appStore = perbaruiJamBangun(appStore, tgl, jam);
+        simpanDanSinkron();
+        renderUI();
+        showBanner("success", `Jam bangun diperbarui ke ${jam}.`);
+      });
+
+      document.getElementById("btnUndo").addEventListener("click", () => {
+        const res = undoTerakhir(appStore);
+        if (res.ok) {
+          appStore = res.store;
+          simpanDanSinkron();
+          renderUI();
+          document.getElementById("bannerSuccess").classList.remove("show");
+        }
+      });
+
+      document.getElementById("btnForceOverride").addEventListener("click", () => {
+        if (!pendingOverrideCtx) return;
+        const { medId, dosisKe } = pendingOverrideCtx;
+        pendingOverrideCtx = null;
+        aksiMinumObat(medId, dosisKe, true);
+      });
+
+      document.getElementById("btnResetDemo").addEventListener("click", () => {
+        appStore = buildSeedStore();
+        simpanDanSinkron();
+        renderUI();
+        switchTab("today");
+        showBanner("success", "Data demo berhasil dipulihkan.");
+      });
+
+      document.getElementById("formTambahObat").addEventListener("submit", (e) => {
+        e.preventDefault();
+        const namaRaw = document.getElementById("inputNamaObat").value;
+        if (!namaRaw || !namaRaw.trim()) {
+          showBanner("error", "Nama obat tidak boleh kosong.");
+          return;
+        }
+        const dosisPerHari = Number(document.getElementById("inputDosisPerHari").value) || 3;
+        const minGapMenit = Number(document.getElementById("inputMinGap").value) || 360;
+        const earliestWakeTime = document.getElementById("inputEarliestWake").value || "07:00";
+        const sleepCutoffTime = document.getElementById("inputSleepCutoff").value || "22:30";
+        const mode = document.getElementById("inputAlarmMode").value;
+
+        const res = tambahObat(appStore, {
+          id: "MED-" + Date.now(),
+          namaObat: namaRaw.trim(),
+          dosisPerHari,
+          intervalMenit: Math.round(1440 / dosisPerHari),
+          minGapMenit,
+          earliestWakeTime,
+          sleepCutoffTime,
+          autoSnoozeMenit: 10,
+          maxSnoozeCount: 3,
+          silentVibrationOnly: mode === "SILENT_VIBRATE",
+          strictInterval: mode === "STRICT"
+        });
+
+        if (!res.ok) {
+          showBanner("error", res.pesan || "Gagal menambahkan obat.");
+          return;
+        }
+
+        appStore = res.store;
+        document.getElementById("inputNamaObat").value = "";
+        simpanDanSinkron();
+        renderUI();
+        switchTab("today");
+        showBanner("success", `${namaRaw.trim()} berhasil dijadwalkan (${dosisPerHari}x sehari).`);
+      });
+
+      renderUI();
+    })();
   </script>
 </body>
 </html>
